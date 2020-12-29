@@ -29,7 +29,7 @@ class TLS {
         "openssl", [
           "req", "-nodes", "-new", "-x509", "-days", "365",
           "-subj", "/C=CA/ST=NS/L=Online/O=Company/OU=IT/CN=localhost",
-          "-keyout", keyname, "-out", certname
+          "-keyout", this.keypath, "-out", this.certpath
         ],{ cwd: path }
       );
 
