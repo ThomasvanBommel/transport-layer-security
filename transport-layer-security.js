@@ -18,20 +18,29 @@ class TLS {
    * @throws Will throw an error if openssl exit status is not 0
    */
   constructor(path, options={}){
-    this.keypath  = path + (options.keyname ? options.keyname : "key.pem");
-    this.certpath = path + (options.certname ? options.certname : "cert.pem");
+    let keyname = options.keyname ? options.keyname : "key.pem";
+    let certname = options.certname ? options.certname : "cert.pem";
+
+    this.keypath  = path + keyname;
+    this.certpath = path + certname;
     this.passphrase = options.passphrase ? options.passphrase : "";
 
     // ensure the certificates exist
-    if(!(fs.existsSync(this.keypath) && fs.existsSync(this.certpath))){
+    if(!fs.existsSync(this.keypath) || !fs.existsSync(this.certpath)){
       // generate keys with openssl
       let cmd = spawnSync(
         "openssl", [
           "req", "-nodes", "-new", "-x509", "-days", "365",
           "-subj", "/C=CA/ST=NS/L=Online/O=Company/OU=IT/CN=localhost",
-          "-keyout", this.keypath, "-out", this.certpath
-        ],{ cwd: path }
+          "-keyout", keyname, "-out", certname
+        ], { cwd: path }
       );
+
+      // check for errors
+      if(cmd.error){
+        console.error(cmd.error);
+        throw `Missing openssl command or target directory '${path}' doesn't exist`;
+      }
 
       // inform user they must try again...
       if(cmd.status === 1)
